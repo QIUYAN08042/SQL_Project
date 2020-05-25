@@ -1,0 +1,375 @@
+leetcode 
+
+database quiz(easy) with mysql laguage (not oracle)
+627. swap salary  
+
+update salary
+set sex= 
+case sex when 'm' Then 'f'
+    else 'm'
+end
+
+620. not boring movies
+select *
+from cinema
+where description!='boring' and mod(id,2)=1
+order by rating desc
+— mod(x,y)=x%y— 
+
+197. rising temperature
+—solution 1—
+
+select a.Id
+from Weather a, Weather b
+where a.Temperature > b.Temperature
+and a.RecordDate=subdate(b.RecordDate,-1)     —subdate 逗号后面代表了interval，- 则往后推时间（当前日子加）， +则往前推时间 ）当前日子减）—
+
+—solution 2—
+select a.Id
+from weather a, Weather b
+where a.temperature > b.Temperature
+and datediff(a.RecordDate, b.RecordDate)=1
+
+—solution 3—
+
+前面一样
+TO_DAYS(wt1.DATE)-TO_DAYS(wt2.DATE)=1;
+
+196. delete duplicata emails
+
+—solution 1—
+delete a
+from Person a join Person b
+on a.email= b.email 
+where a.Id> b.Id
+
+—solution 2—
+delete from Person where id not in( 
+    select t.id from (
+        select min(id) as id from Person group by email
+    ) t
+)
+
+183. customers who never order
+— solution 1—
+select Name as 'Customers'
+from Customers
+where Customers.Id not in
+(select c.Id
+from customers c join orders o on c.ID= o.CustomerID)
+
+—solution 2—
+select Name as 'Customers'
+from Customers
+where Customers.Id not in
+(select CustomerId from Orders)
+
+—solution 3—
+select 
+Name as Customers
+from 
+(
+    select 
+    c.Name, 
+    o.CustomerId
+    from Customers c 
+    left join (select distinct CustomerId from Orders) o 
+    on c.Id=o.CustomerId 
+) t 
+where t.CustomerId is null
+;
+
+in() 或者 not in() 对list的数量有限制，当 large in clauses 这个时候create temp table，insert values and do a join, can run faster.
+
+175. combine two tables
+select Firstname, lastname, city, state
+from person p left join address a on p.personid= a.personid
+
+176. second highest salary
+—solution 1—
+SELECT MAX(Salary) SecondHighestSalary
+from employee
+where salary <(select max(salary) from employee)
+
+—solution 2—
+SELECT MAX(Salary) SecondHighestSalary
+FROM Employee e1
+WHERE (SELECT COUNT(DISTINCT Salary) FROM Employee e2 WHERE e2.Salary > e1.Salary) = 1;
+
+181. employees earning more than their managers
+
+
+select E1.Name as Employee
+from Employee as E1, Employee as E2 
+where E1.ManagerId = E2.Id and E1.Salary > E2.Salary
+
+182. duplicate emails
+
+—solution 1—
+select distinct(p1.email)
+from Person p1  join Person p2 
+on p1.email=p2.email 
+where p1.Id!=p2.Id
+
+—solution 2—
+
+select email
+from Person
+group by Email
+having count(*) > 1
+
+595. big countries
+select name, population, area
+from world
+where area>3000000 or population> 25000000
+
+
+
+596. classes more than 5 students
+select class
+from courses
+group by class
+having count(distinct student)>=5
+
+
+196. delete duplicate emails
+—solution 1—
+delete from Person where id not in
+(select id from(
+ select Min(p.Id) as id from Person p group by p.Email) as temp)
+
+
+—solution 2—
+delete a
+from Person a join Person b
+on a.email= b.email 
+where a.Id> b.Id
+
+
+
+1179. reformat department table
+Select 
+id, 
+sum(case when month='Jan' then revenue  end) as Jan_Revenue,
+sum(case when month='Feb' then revenue  end) as Feb_Revenue,
+sum(case when month='Mar' then revenue  end) as Mar_Revenue,
+sum(case when month='Apr' then revenue  end) as Apr_Revenue,
+sum(case when month='May' then revenue  end) as May_Revenue,
+sum(case when month='Jun' then revenue  end) as Jun_Revenue,
+sum(case when month='Jul' then revenue  end) as Jul_Revenue,
+sum(case when month='Aug' then revenue  end) as Aug_Revenue,
+sum(case when month='Sep' then revenue  end) as Sep_Revenue,
+sum(case when month='Oct' then revenue  end) as Oct_Revenue,
+sum(case when month='Nov' then revenue  end) as Nov_Revenue,
+sum(case when month='Dec' then revenue  end) as Dec_Revenue
+FROM
+Department
+group by id
+
+
+
+
+database quiz (medium) 
+
+
+177. Nth Highest Salary: 
+
+—solution 1—
+CREATE FUNCTION getNthHighestSalary(N INT) RETURNS INT
+BEGIN
+declare M INT;
+set M=N-1;
+  RETURN (
+      # Write your MySQL query statement below.
+      select distinct salary
+      from Employee
+      Order by Salary desc limit M,1
+  );
+END 
+
+—solution 2—
+CREATE FUNCTION getNthHighestSalary(N INT) RETURNS INT
+BEGIN
+  SET N=N-1;
+  RETURN (
+      # Write your MySQL query statement below.
+      SELECT Salary
+      FROM Employee
+      GROUP BY Salary
+      ORDER BY Salary DESC
+      LIMIT 1 OFFSET N
+      
+  );
+END
+
+
+178. Rank Scores
+—solution 1—
+
+select s1.score, count(s2.score) as 'Rank'
+from Scores s1,
+(select distinct score from scores) s2
+where s1.score <=s2.score
+group by s1.id
+order by s1.score desc
+
+
+—solution 2— 
+
+ (mysql:dense_rank(), rank(), percent_rank()) dense排序是连着的，如 1，1，2，3，3，4，no holes in ranks; rank方法是下一个值会加1, 如 1,1,3,3,5
+
+select score, dense_rank() over (order by score desc) 'Rank'
+
+from scores
+
+—solution 3— using variables
+
+@num=@num+1,此时=是等于的作用，@num不等于@num+1，所以始终返回0，如果改为@num=@num,始终返回1了。mysql数据库中，用1表示真，0表示假。
+
+@num:=@num+1,:=是赋值的作用，所以，先执行@num+1,然后再赋值给@num，所以能正确实现行号的作用。
+
+select Score,
+case
+when @last_score=Score
+Then @i
+When @last_score:=Score
+Then @i:=@i+1
+END AS i
+from (select Score from Scores order by Score desc) u, (select @i:=0, @last_score:=NULL)r;
+
+
+180. consecutive numbers
+
+select distinct l1.num as ConsecutiveNums
+from logs l1, logs l2, logs l3
+where l1.id=l2.id-1
+and l2.id=l3.id-1
+and l1.num=l2.num
+and l2.num=l3.num
+
+184. department highest salary
+
+—solution 1—
+
+select  d.name as 'Department',e.Name as 'Employee', e.Salary
+from Employee e join
+
+(
+    select Max(Salary) as Max_salary, DepartmentId
+    from Employee
+    group by DepartmentId) m 
+on e.DepartmentId=m.DepartmentId
+
+
+join Department d on d.Id=m.DepartmentId
+
+where e.salary= m.Max_salary
+
+—solution 2—
+
+select  d.name as 'Department',e.Name as 'Employee', e.Salary
+from Employee e
+left join department d
+on e.departmentid =d.id
+where e.salary>= All(select salary from employee where departmentid= d.id)
+and d.id is not null
+
+626.exchange seats
+
+select 
+ case when id=(select max(id) from seat) and id%2 !=0 then id
+ when id%2=0 then id-1
+ else id+1
+ end as id, student
+from seat
+order by id
+
+leetcode database  quiz(hard)
+
+185. department top three salaries
+
+—solution 1—
+select d.Name as 'Department', m.Name as 'Employee', m.Salary
+from 
+(select *, dense_rank() over (partition by departmentId order by salary  desc) as 'rank'
+from Employee) m
+
+join department d on m.departmentId=d.ID
+where m.rank<=3
+
+—?????
+select c.Name as department, b.name as employee, b.salary
+from employee b
+join department c on b. departmentid=c.id
+where(
+select count(distinct e.salary)
+from employee e
+where e.salary<=b.salary and e.departmentId=b.departmentId)<=3
+
+order by b.salary desc
+—?????
+
+—solution 2—
+
+SELECT c.Name Department, a.Name Employee, a.Salary
+FROM Employee a
+LEFT JOIN Employee b ON a.DepartmentId = b.DepartmentId AND a.Salary < b.Salary
+INNER JOIN Department c ON a.DepartmentId = c.Id
+GROUP BY a.Id
+HAVING COUNT(DISTINCT b.Salary) + 1 <= 3
+ ????
+
+262. Trips and Users
+
+ —solution 1—
+
+select Request_at as Day, round(count( 
+case when Status ='cancelled_by_driver' or Status='cancelled_by_client' then Id end)/count(*), 2) as 'Cancellation Rate'
+from Trips
+where Client_Id in (select Users_Id from Users where Banned='No')
+and Driver_Id in (select Users_Id from Users where Banned='No')
+and Request_at between '2013-10-01' and '2013-10-03'
+group by Request_at 
+
+
+其中when Status in (‘cancelled_by_driver’, ‘cancelled_by_client’)…
+
+—solution 2—
+similar with solution 1
+select 
+Request_at as Day,
+round(SUM(case when status like 'cancelled%' then 1 else 0 end)/count(status),2) as 'cancellation rate'
+from trips
+where request_at between '2013-10-01' and '2013-10-03'
+and
+Client_id not in (select Users_Id from Users where Banned ='Yes')
+and Driver_Id not in (select Users_Id from Users where Banned=‘Yes’)
+group by Request_at
+
+
+601. Human traffic of stadium
+
+—solution 1—
+
+select distinct s1.id, s1.visit_date, s1.people
+
+from stadium s1, stadium s2, stadium s3
+where s1.people >=100 and s2.people>=100 and s3.people>=100
+
+and ((s1.id+1=s2.id and s1.id+2=s3.id) or(
+s1.id-1=s2.id and s1.id+1=s3.id) or
+(s1.id-1=s2.id and s1.id-2=s3.id) )
+
+order by s1.id asc 
+
+
+—solution 2—
+
+select distinct s1.id, s1.visit_date,s1.people
+from stadium s1
+where
+(people>=100 and (select s2.people from stadium s2 where s2.id=s1.id+1)>=100 and (select s3. people from stadium s3 where s3.id=s1.id+2) >=100) or
+(people>=100 and (select s2.people from stadium s2 where s2.id=s1.id-1)>=100 and (select s3. people from stadium s3 where s3.id=s1.id+1) >=100) or
+(people>=100 and (select s2.people from stadium s2 where s2.id=s1.id-1)>=100 and (select s3. people from stadium s3 where s3.id=s1.id-2) >=100)
+
+

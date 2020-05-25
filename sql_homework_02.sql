@@ -189,7 +189,7 @@ select first_name
 from actor 
 where first_name='HARPO'; 
 
--- ??? ----------???????????-------------------
+-- solution1--
  select first_name
 	from actor
 	where first_name = 'Harpo';
@@ -204,6 +204,19 @@ where first_name='HARPO';
     	when first_name = 'Groucho' THEN 'MUCHO GROUCHO'
     	else first_name
 	END;
+    
+-- solution 2--
+
+UPDATE actor 
+SET first_name = (
+		CASE WHEN first_name = 'HARPO' 
+		THEN 'GROUCHO' 
+		ELSE 'MUCHO GROUCHO'
+        END
+	)
+ WHERE actor_id = 172;
+ 
+ 
 	
 	select *
 	from actor;
