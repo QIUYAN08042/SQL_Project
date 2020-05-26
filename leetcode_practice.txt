@@ -297,27 +297,27 @@ from Employee) m
 join department d on m.departmentId=d.ID
 where m.rank<=3
 
-—?????
+—solution 2—
 select c.Name as department, b.name as employee, b.salary
 from employee b
 join department c on b. departmentid=c.id
 where(
 select count(distinct e.salary)
 from employee e
-where e.salary<=b.salary and e.departmentId=b.departmentId)<=3
+where b.salary<=e.salary and b.departmentId=e.departmentId)<=3
 
-order by b.salary desc
-—?????
+order by  department, b.salary desc;
 
-—solution 2—
+—solution 3—
 
 SELECT c.Name Department, a.Name Employee, a.Salary
 FROM Employee a
 LEFT JOIN Employee b ON a.DepartmentId = b.DepartmentId AND a.Salary < b.Salary
 INNER JOIN Department c ON a.DepartmentId = c.Id
 GROUP BY a.Id
-HAVING COUNT(DISTINCT b.Salary) + 1 <= 3
- ????
+HAVING COUNT(DISTINCT b.Salary)+1  <= 3
+order by Department, salary desc;
+
 
 262. Trips and Users
 
