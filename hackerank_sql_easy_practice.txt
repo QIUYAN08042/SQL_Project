@@ -1,0 +1,86 @@
+hackerrank sql easy quiz
+
+———revising the select query I————
+select *
+from CITY
+WHERE POPULATION > 100000 AND COUNTRYCODE='USA'
+
+———revising the select query II————
+select NAME
+from CITY
+WHERE POPULATION > 120000 AND COUNTRYCODE='USA'
+
+———weather observation station 4————
+select (count(city)-count(distinct city)) as difference
+from station
+
+———weather observation station 5————
+(select city ,length(replace(city,' ','')) from station order by length(replace(city,' ','')) asc, city limit 1)
+union
+(select city ,length(replace(city,' ','')) from station order by length(replace(city,' ','')) desc , city limit 1)
+
+———weather observation station 6————
+select distinct city 
+from station
+where substring(city,1,1)in ('a', 'e', 'i', 'o','u')
+
+select distinct city 
+from station
+where city regexp '^[aeiou]' ( 此处regexp可换成rlike）
+
+———weather observation station 7————
+
+—solution1—
+select distinct city 
+from station
+where right(city,1) in ('a','e','i','o','u') 
+
+—solution2—
+select distinct city 
+from station
+where substring(city,-1,1) in ('a','e','i','o','u') 
+
+—solution3—
+SELECT DISTINCT CITY FROM STATION WHERE CITY REGEXP '[aeiou]$'
+
+有一些是如SELECT DISTINCT(CITY) FROM STATION WHERE CITY LIKE '%[AEIOU]';  是mssql server 语言
+
+
+———weather observation station 8————
+
+—solution1—
+select distinct city
+from station
+where substring(city,1,1) in ('a','e','i','o','u')  and substring(city,-1,1) in ('a','e','i','o','u')
+
+—solution2—
+SELECT DISTINCT city FROM station WHERE city RLIKE '^[aeiou]' AND city RLIKE '[aeiou]$'
+
+———weather observation station 9————
+
+—solution1—
+select distinct city 
+from station
+where city not regexp '^[aeiou]' 
+
+—solution2—
+select distinct city 
+from station
+where left(city,1)  not in ('a','e','i','o','u') 
+
+———higher than 75 marks————
+select name 
+from students 
+where marks>75
+order by substring(name,-3,3), ID asc
+
+
+———type of triangle————
+select 
+case 
+when A + B <= C OR A + C <= B OR B + C <= A THEN 'Not A Triangle' 
+when  A = B AND B=C THEN 'Equilateral' 
+when A = B OR B = C or A=C  then 'Isosceles' 
+else 'Scalene' 
+end from triangles;
+###这里when的顺序是有影响的
