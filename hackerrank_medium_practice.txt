@@ -1,0 +1,57 @@
+hackerrank sql medium quiz
+
+——————The Pads———————
+___solution 1___
+
+select concat(Name,case
+               when occupation='doctor' Then'(D)'
+               when occupation='actor' Then'(A)'
+               when occupation='singer' Then'(S)'
+               else '(P)'
+               end) 
+from occupations
+order by Name
+
+select 'There are a total of', count(occupation), concat(lower(occupation),"s.")
+from occupations
+group by occupation
+order by count(occupation), occupation
+
+
+___solution2___
+select concat(Name, '(', substring(Occupation, 1, 1), ')') 
+from Occupations 
+order by Name;(一定要加冒号）
+
+select concat('There are total ', count(*), ' ', lower(Occupation), 's.')
+from Occupations 
+group By Occupation 
+order by Count(*);
+
+
+——————Occupations———————
+
+SELECT 
+MIN(CASE WHEN Occupation = 'Doctor' THEN Name ELSE NULL END) AS Doctor,
+MIN(CASE WHEN Occupation = 'Professor' THEN Name ELSE NULL END) AS Professor,
+MIN(CASE WHEN Occupation = 'Singer' THEN Name ELSE NULL END) AS Singer,
+MIN(CASE WHEN Occupation = 'Actor' THEN Name ELSE NULL END) AS Actor
+FROM (
+  SELECT a.Occupation,
+         a.Name,
+         (SELECT COUNT(*) 
+            FROM Occupations AS b
+            WHERE a.Occupation = b.Occupation AND a.Name > b.Name) AS rank
+  FROM Occupations AS a
+) AS c
+GROUP BY c.rank;
+
+
+
+-----Binary Tree Nodes----
+select N, (case when P is null then 'Root' 
+           when N not in (select P FROM BST where P is not Null) then 'Leaf' 
+           else 'Inner'
+           end) 
+from BST
+order by N 

@@ -84,3 +84,114 @@ when A = B OR B = C or A=C  then 'Isosceles'
 else 'Scalene' 
 end from triangles;
 ###这里when的顺序是有影响的
+
+———revising aggregations_count function————
+select count(ID)
+from city
+where population>100000
+
+
+———revising aggregations_sum function————
+select sum(population)
+from city
+where district ='california'
+
+----average population_rounded down to the nearest integer.-----
+select round(avg(population))
+from city
+
+
+———the blunder————
+select ceil(avg(salary)-avg((replace(salary,'0','')))) 
+from employees
+
+-------top earners-------
+
+--solution 1--
+select salary*months as a, count(*) 
+from employee
+group by a
+order by a desc
+limit 1
+
+--solution 2--
+select salary*months, count(*) 
+from employee
+where salary*months = (select max(salary*months) as b from employee)
+group by salary*months
+
+
+-----weather observation station 2----
+select round(sum(lat_n),2) as lat, round(sum(long_w),2) as lon
+from station
+
+-----weather observation station 13----
+select  truncate(sum(lat_n),4)
+from station
+where lat_n>38.7880 and lat_n<137.2345
+
+truncate截断时，不会进行四舍五入
+而round会
+
+-----weather observation station 14------
+select  truncate(lat_n,4)
+from station
+where lat_n<137.2345
+order by lat_n desc
+limit 1
+
+select  truncate(max(lat_n),4)
+from station
+where lat_n<137.2345 
+order by lat_n desc
+
+select round(long_w,4)
+from station
+where lat_n = (select max(lat_n) from station where lat_n<137.2345 order by lat_n desc)
+
+-----asian population ----
+select sum(a.population)
+from city a inner join country c 
+ on a.countrycode=c.code
+where c.continent='Asia'
+
+-----average population of each continent----
+select c.continent,floor(avg(ci.population)) 
+from city ci
+inner join country c
+ON ci.countrycode = c.code
+group by c.continent;
+
+
+-------draw the triangle 1-----
+---solution 1----
+select concat(repeat('* ', 19),  '*') union all
+select concat(repeat('* ', 18),  '*') union all
+select concat(repeat('* ', 17),  '*') union all
+select concat(repeat('* ', 16),  '*') union all
+select concat(repeat('* ', 15),  '*') union all
+select concat(repeat('* ', 14),  '*') union all
+select concat(repeat('* ', 13),  '*') union all
+select concat(repeat('* ', 12),  '*') union all
+select concat(repeat('* ', 11),  '*') union all
+select concat(repeat('* ', 10),  '*') union all
+select concat(repeat('* ', 9),  '*') union all
+select concat(repeat('* ', 8),  '*') union all
+select concat(repeat('* ', 7),  '*') union all
+select concat(repeat('* ', 6),  '*') union all
+select concat(repeat('* ', 5),  '*') union all
+select concat(repeat('* ', 4),  '*') union all
+select concat(repeat('* ', 3),  '*') union all
+select concat(repeat('* ', 2),  '*') union all
+select concat(repeat('* ', 1),  '*') union all
+select '*'
+
+
+---solution 2---
+set @NUMBER:=21;
+select repeat ('* ', @NUMBER:=@NUMBER-1) FROM information_schema.tables;
+
+---draw the triangle 2---
+set @number:=0;
+select repeat('* ', @number:=@number+1) from information_schema.tables where @number<20;
+
